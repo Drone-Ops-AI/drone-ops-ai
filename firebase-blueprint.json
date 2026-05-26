@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "AeroSaaS crew member profile settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user authentication identifier" },
+        "displayName": { "type": "string", "description": "Crew member display name" },
+        "email": { "type": "string", "description": "Crew member contact email address" },
+        "phoneNumber": { "type": "string", "description": "Active military or civil telecommunication channel" },
+        "location": { "type": "string", "description": "Primary airspace division or deployment quadrant" },
+        "studyGoal": { "type": "string", "description": "Primary study target goal text" },
+        "certificationTargetDate": { "type": "string", "description": "FAA Part 107 target certification calendar date" },
+        "profilePhoto": { "type": "string", "description": "Base64 or URL link for pilot insignia avatar image" }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "FAA academy practice exams and module tracking state",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner identifier matching the user's Firebase UID" },
+        "completedQuestions": { "type": "object", "description": "Record mapping question ID to selected option index" },
+        "examAttempts": { "type": "array", "description": "Historic practice exam scores and timestamps" },
+        "studyProgress": { "type": "object", "description": "Record mapping concept ID to mastered state" },
+        "studyConfidence": { "type": "object", "description": "Record mapping concept ID to confidence level" },
+        "studyNotes": { "type": "object", "description": "Record mapping concept ID to personal study observations" }
+      },
+      "required": ["uid"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Isolated profiles containing dynamic crew details"
+    },
+    "/progress/{userId}": {
+      "schema": "UserProgress",
+      "description": "State telemetry matching individual progress metrics"
+    }
+  }
+}
