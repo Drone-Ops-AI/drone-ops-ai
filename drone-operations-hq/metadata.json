@@ -1,0 +1,6 @@
+{
+  "name": "Drone Operations HQ",
+  "description": "Comprehensive FAA Part 107 operational learning platform, practice exam engine, and tactical command center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

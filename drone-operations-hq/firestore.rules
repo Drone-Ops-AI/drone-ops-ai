@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global default catch-all to deny all unauthorized requests
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive Global Reusable Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow read, delete: if isOwner(userId) && isValidId(userId);
+      allow create, update: if isOwner(userId) && isValidId(userId)
+        && isValidUserProfile(request.resource.data);
+    }
+
+    // User Progress Rules
+    match /progress/{userId} {
+      allow read, delete: if isOwner(userId) && isValidId(userId);
+      allow create, update: if isOwner(userId) && isValidId(userId)
+        && isValidUserProgress(request.resource.data);
+    }
+
+    // Validation Blueprint for User Profiles
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email'])
+        && data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 200
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100))
+        && (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 50))
+        && (!('location' in data) || (data.location is string && data.location.size() <= 150))
+        && (!('studyGoal' in data) || (data.studyGoal is string && data.studyGoal.size() <= 500))
+        && (!('certificationTargetDate' in data) || (data.certificationTargetDate is string && data.certificationTargetDate.size() <= 100))
+        && (!('profilePhoto' in data) || (data.profilePhoto is string && data.profilePhoto.size() <= 2097152)); // Max 2MB base64 string or url
+    }
+
+    // Validation Blueprint for User Progress Stats
+    function isValidUserProgress(data) {
+      return data.keys().hasAll(['uid'])
+        && data.uid == request.auth.uid
+        && (!('completedQuestions' in data) || data.completedQuestions is map)
+        && (!('studyProgress' in data) || data.studyProgress is map)
+        && (!('studyConfidence' in data) || data.studyConfidence is map)
+        && (!('studyNotes' in data) || data.studyNotes is map)
+        && (!('examAttempts' in data) || data.examAttempts is list);
+    }
+  }
+}
